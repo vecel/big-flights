@@ -1,30 +1,31 @@
 # Data Sources
+This document provides research and overview of data sources intended to use in project.
 
-### OpenSky - REST API
-Fetches live data about flights. Provides vector states (e.g. flight id, position, velocity) for planes in specified region (bounding box). 
+## Summary table
 
-**Request:** HTTP request to endpoint `/states/all`.
+| Data Source | Description | Request | Response |
+| :--- | :--- | :--- | :--- |
+| **OpenSky - REST API** | Fetches live flight data and vector states (e.g., flight ID, position, velocity) for planes in a specified bounding box. | HTTP request to `/states/all`. | JSON containing a `time` field and a `states` array of vector states. |
+| **OpenSky - Historical Data** | Provides historical data regarding flight vector states. | Trino request to `https://trino.opensky-network.org`. | Trino JSON document with state vector data batches and a `nextUri` for subsequent batches. |
 
-**Response:** JSON with two fields: *time*, *states*. *States* is an array with each row representing vector state of particular plane. All states are associated with *time* field from top-level response. See: https://openskynetwork.github.io/opensky-api/rest.html#all-state-vectors.
+## Notes & limitations
 
-**Notes and limitations:**
-1. Requires an account to provide 4000 credits per day (instead of 400 for anonymous users). Supports OAuth2 authentication method only.
-2. OAuth2 token expires every 30min and has to be refreshed. This can be done with HTTP request to OpenSky service (see: https://openskynetwork.github.io/opensky-api/rest.html#authentication).
-3. Enpoint `/states/all` serves data with 5s time resolution. One call costs 4 credits, but this value can be reduced with smaller bounding box (see: https://openskynetwork.github.io/opensky-api/rest.html#api-credits). E.g. making request every 10s allows us to get live data for about 3h.
-4. Using OpenSky API in project requires citation of: *Matthias Schäfer, Martin Strohmeier, Vincent Lenders, Ivan Martinovic and Matthias Wilhelm.
-"Bringing Up OpenSky: A Large-scale ADS-B Sensor Network for Research".
-In Proceedings of the 13th IEEE/ACM International Symposium on Information Processing in Sensor Networks (IPSN), pages 83-94, April 2014.* Adding link to official site https://opensky-network.org is welcome.
+**OpenSky - REST API**
+* Requires an account for 4,000 daily credits via OAuth2.
+* Tokens expire every 30 minutes and must be refreshed.
+* Data has a 5-second time resolution and costs 4 credits per call, which can be reduced by using a smaller bounding box.
+* Usage requires an academic citation.
+* State vector data structure: https://openskynetwork.github.io/opensky-api/rest.html#all-state-vectors.
+* Token refreshment automatization: https://openskynetwork.github.io/opensky-api/rest.html#authentication.
+* Credits pricing: https://openskynetwork.github.io/opensky-api/rest.html#api-credits.
+* Citation: https://openskynetwork.github.io/opensky-api/.
 
-### OpenSky - Historical Data
-Provides historical data about flight's vector states.
-
-**Request:** Trino request to https://trino.opensky-network.org.
-
-**Response:** Trino JSON document (see: https://trino.io/docs/current/develop/client-protocol.html#important-queryresults-attributes) with state vectors data batches (see: https://openskynetwork.github.io/opensky-api/trino.html#state-vectors) and *nextUri* for following batches.
-
-**Notes and limitations:**
-1. Requires an account and verification for application purpose. Our app has to be considered university-affiliated research to have access to historical data.
-2. OpenSky's Trino calls must follow performance guidelines (see: https://openskynetwork.github.io/opensky-api/trino.html#tools-performance-considerations) or the app will be banned for ever.
-3. Filtering by partition column MUST be used in particular.
-4. Bulk downloads (e.g. week global data) should not be used.
-5. Trino calls can be done from Python script and streamlined to Nifi.
+**OpenSky - Historical Data**
+* Requires a verified university-affiliated research account.
+* Strict performance guidelines apply to avoid a permanent ban. 
+* Filtering by partition column is mandatory.
+* Bulk downloads are strictly prohibited.
+* Queries can be executed via Python and streamlined to NiFi.
+* Abstract Trino response: https://trino.io/docs/current/develop/client-protocol.
+* State vectors structure (differs slightly from API): https://openskynetwork.github.io/opensky-api/trino.html#state-vectors.
+* Very important performance guidelines: https://openskynetwork.github.io/opensky-api/trino.html#tools-performance-considerations.
