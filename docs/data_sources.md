@@ -9,6 +9,7 @@ This document provides research and overview of data sources intended to use in 
 | **OpenSky - Historical Data** | Provides historical data regarding flight vector states. | Trino request to `https://trino.opensky-network.org`. | Trino JSON document with state vector data batches and a `nextUri` for subsequent batches. |
 | **Open-Meteo - Weather API** | Fetches live and forecast weather data globally using various high-resolution models (e.g., ICON, ECMWF). | HTTP GET request to `/v1/forecast`. | JSON containing hourly/daily variable arrays and time vectors (CSV/XLSX also supported). |
 | **Open-Meteo - Historical Weather** | Provides historical weather and climate reanalysis data globally, dating back to 1940. | HTTP GET request to `/v1/archive`. | JSON containing historical hourly/daily weather data variables. |
+| **NASA POWER API** | Fetches global scientific-grade solar, meteorological, and climate data (historical and near real-time) from NASA satellite models. | HTTP GET request to `/api/temporal/` endpoints. | JSON, CSV, GeoJSON, ASCII, or NetCDF formats. |
 | **OpenAQ - REST API** | Fetches global air quality data (PM2.5, PM10, O3, NO2, etc.) from reference-grade and low-cost sensors worldwide. | HTTP GET request to endpoints like `/v3/measurements`. | JSON containing location metadata, parameters, and time-series measurement data. |
 ## Notes & limitations
 
@@ -47,6 +48,17 @@ This document provides research and overview of data sources intended to use in 
 - Live data from recent days is continuously appended, usually with a 2-5 day delay depending on the dataset.
 - Large historical queries can be aggregated to daily levels directly in the API to save bandwidth.
 - Historical endpoint structure: https://open-meteo.com/en/docs/historical-weather-api.
+
+**NASA POWER (Prediction Of Worldwide Energy Resource) API**
+- Completely free and open-access; no API key or sign-up is required.
+- Provides historical temporal data (hourly, daily, monthly, annual) and long-term climate averages. Real-time data has a delay, typically being available within 2 days of real-time.
+- Parameters include solar irradiance, temperature (max/min), humidity, wind speed, precipitation, and cloud coverage.
+- Data is strictly categorized by user communities: AG (Agriculture), RE (Renewable Energy), and SB (Sustainable Buildings). You can only request data from one community at a time.
+- Rate limits (throttling) apply per IP address to ensure fair usage (e.g., 30 requests per minute on the climatology endpoint).
+- Output is available in formats ideal for data engineering pipelines: CSV, JSON, ASCII, and NetCDF.
+- While there is a web UI, it limits data downloads to a maximum of 366 days per request, making the API essential for extracting long-term historical datasets (e.g., 30-year spans).
+- Official API documentation: https://power.larc.nasa.gov/docs/services/api/
+- Data methodology & citation: https://power.larc.nasa.gov/docs/methodology/
 
 **OpenAQ - REST API**
 - Requires registering for a user API key.
